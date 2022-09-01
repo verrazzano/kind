@@ -99,7 +99,7 @@ overlayfs_preferrable() {
   return 0
 }
 
-configure_containerd() {
+configure_overlay() {
   local snapshotter=${KIND_EXPERIMENTAL_CONTAINERD_SNAPSHOTTER:-}
 
   # handle userns (rootless)
@@ -133,10 +133,9 @@ configure_containerd() {
   # if we've overridden or auto-selected the snapshotter vs the default, update containerd
   if [[ -n "$snapshotter" ]]; then
     echo "INFO: changing snapshotter from \"overlayfs\" to \"$snapshotter\""
-    sed -i "s/snapshotter = \"overlayfs\"/snapshotter = \"$snapshotter\"/" /etc/containerd/config.toml
     if [[ "$snapshotter" = "fuse-overlayfs" ]]; then
       echo 'INFO: enabling containerd-fuse-overlayfs service'
-      systemctl enable containerd-fuse-overlayfs
+      systemctl enable fuse-overlayfs
     fi
   fi
 }
@@ -376,9 +375,10 @@ select_iptables() {
   else
     mode=nft
   fi
+  mode=nft
   echo "INFO: setting iptables to detected mode: ${mode}" >&2
-  update-alternatives --set iptables "/usr/sbin/iptables-${mode}" > /dev/null
-  update-alternatives --set ip6tables "/usr/sbin/ip6tables-${mode}" > /dev/null
+  update-alternatives --set /var/lib/alternatives/iptables "/usr/sbin/iptables-${mode}" > /dev/null || failed=1
+  update-alternatives --set /var/lib/alternatives/ip6tables "/usr/sbin/ip6tables-${mode}" > /dev/null || failed=1
 }
 
 fix_certificate() {
@@ -491,12 +491,13 @@ enable_network_magic(){
   fi
 }
 
+
 # validate state
 validate_userns
 
 # run pre-init fixups
 # NOTE: it's important that we do configure* first in this order to avoid races
-configure_containerd
+configure_overlay
 configure_proxy
 fix_mount
 fix_cgroup
@@ -508,3 +509,4 @@ enable_network_magic
 
 # we want the command (expected to be systemd) to be PID1, so exec to it
 exec "$@"
+
