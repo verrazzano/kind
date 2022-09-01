@@ -20,7 +20,6 @@ import (
 	"runtime"
 
 	"sigs.k8s.io/kind/pkg/build/nodeimage/internal/kube"
-	"sigs.k8s.io/kind/pkg/errors"
 	"sigs.k8s.io/kind/pkg/log"
 )
 
@@ -44,15 +43,6 @@ func Build(options ...Option) error {
 	// verify that we're using a supported arch
 	if !supportedArch(ctx.arch) {
 		ctx.logger.Warnf("unsupported architecture %q", ctx.arch)
-	}
-
-	// locate sources if no kubernetes source was specified
-	if ctx.kubeRoot == "" {
-		kubeRoot, err := kube.FindSource()
-		if err != nil {
-			return errors.Wrap(err, "error finding kuberoot")
-		}
-		ctx.kubeRoot = kubeRoot
 	}
 
 	// initialize bits
