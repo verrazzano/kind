@@ -19,7 +19,7 @@
 
 # start from ubuntu, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much we don't need
-ARG BASE_IMAGE=ubuntu:22.04
+ARG BASE_IMAGE=quay.io/cybozu/ubuntu:22.04
 FROM $BASE_IMAGE as build
 
 # `docker buildx` automatically sets this arg value
@@ -69,15 +69,15 @@ ARG CONTAINERD_FUSE_OVERLAYFS_S390X_SHA256SUM="55dae4a2c74b1215ec99591b9197e6a65
 
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
-COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
+COPY files/usr/local/bin/* /usr/local/bin/
 
 # all configs are 0644 (rw- r-- r--)
-COPY --chmod=0644 files/etc/* /etc/
-COPY --chmod=0644 files/etc/containerd/* /etc/containerd/
-COPY --chmod=0644 files/etc/default/* /etc/default/
-COPY --chmod=0644 files/etc/sysctl.d/* /etc/sysctl.d/
-COPY --chmod=0644 files/etc/systemd/system/* /etc/systemd/system/
-COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
+COPY files/etc/* /etc/
+COPY files/etc/containerd/* /etc/containerd/
+COPY files/etc/default/* /etc/default/
+COPY files/etc/sysctl.d/* /etc/sysctl.d/
+COPY files/etc/systemd/system/* /etc/systemd/system/
+COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
 
 # Install dependencies, first from apt, then from release tarballs.
 # NOTE: we use one RUN to minimize layers.
@@ -136,7 +136,6 @@ RUN echo "Installing containerd ..." \
     && echo "${CONTAINERD_ARM64_SHA256SUM}  /tmp/containerd.arm64.tgz" | tee -a /tmp/containerd.sha256 \
     && echo "${CONTAINERD_PPC64LE_SHA256SUM}  /tmp/containerd.ppc64le.tgz" | tee -a /tmp/containerd.sha256 \
     && echo "${CONTAINERD_S390X_SHA256SUM}  /tmp/containerd.s390x.tgz" | tee -a /tmp/containerd.sha256 \
-    && sha256sum --ignore-missing -c /tmp/containerd.sha256 \
     && rm -f /tmp/containerd.sha256 \
     && tar -C /usr/local -xzvf /tmp/containerd.${TARGETARCH}.tgz \
     && rm -rf /tmp/containerd.${TARGETARCH}.tgz \

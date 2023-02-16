@@ -32,7 +32,8 @@ RUN apt update && \
       procps bash
 
 # copy in script for staging distro provided binary to distroless
-COPY --chmod=0755 stage-binary-and-deps.sh /usr/local/bin/
+COPY stage-binary-and-deps.sh /usr/local/bin/
+RUN chmod 0775 /usr/local/bin/stage-binary-and-deps.sh
 
 # stage everything for copying into the final image
 # NOTE: kind currently also uses "mkdir" and "cp" to write files within the container

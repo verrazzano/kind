@@ -14,11 +14,14 @@
 
 # first stage build kindnetd binary
 # NOTE: tentatively follow upstream kubernetes go version based on k8s in go.mod
-FROM golang:1.18
+FROM ghcr.io/oracle/oraclelinux:8-slim
 WORKDIR /go/src
 # make deps fetching cacheable
 COPY go.mod go.sum ./
-RUN go mod download
+RUN microdnf -y upgrade && \
+    microdnf -y module enable go-toolset:ol8 && \
+    microdnf -y install go-toolset && \
+    go mod download
 # build
 COPY . .
 RUN CGO_ENABLED=0 go build -o ./kindnetd ./cmd/kindnetd
