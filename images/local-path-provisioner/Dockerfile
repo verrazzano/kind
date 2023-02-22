@@ -12,14 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.18
-RUN git clone https://github.com/rancher/local-path-provisioner
+FROM ghcr.io/oracle/oraclelinux:8-slim
 ARG VERSION
-RUN cd local-path-provisioner && \
+RUN microdnf -y upgrade && \
+    microdnf -y module enable go-toolset:ol8 && \
+    microdnf -y install go-toolset && \
+    microdnf install git && \
+    git clone https://github.com/rancher/local-path-provisioner && \
+    cd local-path-provisioner && \
     git fetch && git checkout "${VERSION}" && \
     scripts/build && \
     mv bin/local-path-provisioner /usr/local/bin/local-path-provisioner
 
-FROM gcr.io/distroless/base-debian11
+FROM ghcr.io/oracle/oraclelinux:8-slim
 COPY --from=0 /usr/local/bin/local-path-provisioner /usr/local/bin/local-path-provisioner
 ENTRYPOINT /usr/local/bin/local-path-provisioner

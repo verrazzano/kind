@@ -12,6 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 VERSION=v0.0.22
-TAG=$(VERSION)-kind.0
 EXTRA_BUILD_OPT=--build-arg=VERSION=$(VERSION)
 include $(CURDIR)/../Makefile.common.in
