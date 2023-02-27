@@ -74,7 +74,7 @@ RUN chmod 0755 /usr/local/bin/*
 
 # all configs are 0644 (rw- r-- r--)
 COPY files/etc/* /etc/
-RUN chmod 0644 /etc/*
+RUN chmod 0644 /etc/crictl.yaml
 COPY files/etc/containerd/* /etc/containerd/
 RUN chmod 0644 /etc/containerd/*
 COPY files/etc/default/* /etc/default/
