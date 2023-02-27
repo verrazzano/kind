@@ -70,14 +70,21 @@ ARG CONTAINERD_FUSE_OVERLAYFS_S390X_SHA256SUM="55dae4a2c74b1215ec99591b9197e6a65
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
 COPY files/usr/local/bin/* /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/*
 
 # all configs are 0644 (rw- r-- r--)
 COPY files/etc/* /etc/
+RUN chmod 0644 /etc/*
 COPY files/etc/containerd/* /etc/containerd/
+RUN chmod 0644 /etc/containerd/*
 COPY files/etc/default/* /etc/default/
+RUN chmod 0644 /etc/default/*
 COPY files/etc/sysctl.d/* /etc/sysctl.d/
+RUN chmod 0644 /etc/sysctl.d/*
 COPY files/etc/systemd/system/* /etc/systemd/system/
+RUN chmod 0644 /etc/systemd/system/*
 COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
+RUN chmod 0644 /etc/systemd/system/kubelet.service.d/*
 
 # Install dependencies, first from apt, then from release tarballs.
 # NOTE: we use one RUN to minimize layers.
