@@ -19,7 +19,7 @@
 
 # start from ubuntu, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much we don't need
-ARG BASE_IMAGE=quay.io/cybozu/ubuntu:22.04
+ARG BASE_IMAGE=quay.io/webhippie/ubuntu:21.1
 FROM $BASE_IMAGE as build
 
 # `docker buildx` automatically sets this arg value
