@@ -22,13 +22,13 @@ FROM $BASE_IMAGE as build
 COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
 
 # all configs are 0644 (rw- r-- r--)
-COPY --chmod=0644 files/etc/* /etc/
-COPY --chmod=0644 files/etc/containers/* /etc/containers/
-COPY --chmod=0644 files/etc/crio/crio.conf.d/* /etc/crio/crio.conf.d/
-COPY --chmod=0644 files/etc/default/* /etc/default/
-COPY --chmod=0644 files/etc/sysctl.d/* /etc/sysctl.d/
-COPY --chmod=0644 files/etc/systemd/system/* /etc/systemd/system/
-COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
+COPY files/etc/* /etc/
+COPY files/etc/containers/* /etc/containers/
+COPY files/etc/crio/crio.conf.d/* /etc/crio/crio.conf.d/
+COPY files/etc/default/* /etc/default/
+COPY files/etc/sysctl.d/* /etc/sysctl.d/
+COPY files/etc/systemd/system/* /etc/systemd/system/
+COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
 
 RUN chmod 0644 /etc/containers/ /etc/crio/crio.conf.d/ /etc/default/ /etc/sysctl.d/ /etc/systemd/system/ \
                /etc/systemd/system/kubelet.service.d/
