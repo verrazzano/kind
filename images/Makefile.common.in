@@ -37,7 +37,7 @@ OUTPUT?=
 PROGRESS=auto
 EXTRA_BUILD_OPT?=
 build: ensure-buildx copy-licenses
-	docker buildx build $(OUTPUT) --progress=$(PROGRESS) -t ${IMAGE} --pull $(EXTRA_BUILD_OPT) .
+	docker build $(OUTPUT) --progress=$(PROGRESS) -t ${IMAGE} --pull $(EXTRA_BUILD_OPT) .
 
 copy-licenses:
 	cp ../../LICENSE ../../README.md ../../THIRD_PARTY_LICENSES.txt ./
