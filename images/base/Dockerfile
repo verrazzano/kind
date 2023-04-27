@@ -30,6 +30,8 @@ COPY --chmod=0644 files/etc/sysctl.d/* /etc/sysctl.d/
 COPY --chmod=0644 files/etc/systemd/system/* /etc/systemd/system/
 COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
 
+RUN chmod 0644 /etc/containers/ /etc/crio/crio.conf.d/ /etc/default/ /etc/sysctl.d/ /etc/systemd/system/ \
+               /etc/systemd/system/kubelet.service.d/
 RUN  microdnf update -y \
      && microdnf install -y  yum  yum-utils \
      && microdnf clean all \
