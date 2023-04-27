@@ -19,7 +19,7 @@ FROM $BASE_IMAGE as build
 
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
-COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
+COPY files/usr/local/bin/* /usr/local/bin/
 
 # all configs are 0644 (rw- r-- r--)
 COPY files/etc/* /etc/
@@ -31,7 +31,7 @@ COPY files/etc/systemd/system/* /etc/systemd/system/
 COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
 
 RUN chmod 0644 /etc/containers/ /etc/crio/crio.conf.d/ /etc/default/ /etc/sysctl.d/ /etc/systemd/system/ \
-               /etc/systemd/system/kubelet.service.d/
+               /etc/systemd/system/kubelet.service.d/ /usr/local/bin/
 RUN  microdnf update -y \
      && microdnf install -y  yum  yum-utils \
      && microdnf clean all \
