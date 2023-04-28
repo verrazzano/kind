@@ -51,14 +51,19 @@ RUN echo "Installing Packages ..." \
     && rm -rf /var/cache/yum/*
 
 
+#RUN echo "Installing OCNE binaries ..." \
+#    && dnf install -y  https://yum.oracle.com/repo/OracleLinux/OL8/olcne15/x86_64/getPackage/conmon-2.0.26-2.el8.x86_64.rpm  \
+#    && dnf install -y  cri-tools cri-o olcne-utils  \
+#    && dnf install -y kubeadm-1.23.7-1.el8 kubectl-1.23.7-1.el8 kubelet-1.23.7-1.el8 kubernetes-cni-1.0.1-2.el8 kubernetes-cni-plugins-1.0.1-3.el8 \
+#    && systemctl enable crio.service \
+#    && dnf clean all \
+#    && rm -rf /var/cache/yum/*
 RUN echo "Installing OCNE binaries ..." \
-    && dnf install -y  https://yum.oracle.com/repo/OracleLinux/OL8/olcne15/x86_64/getPackage/conmon-2.0.26-2.el8.x86_64.rpm  \
-    && dnf install -y  cri-tools cri-o olcne-utils  \
+    && dnf install -y  cri-tools cri-o \
     && dnf install -y kubeadm-1.23.7-1.el8 kubectl-1.23.7-1.el8 kubelet-1.23.7-1.el8 kubernetes-cni-1.0.1-2.el8 kubernetes-cni-plugins-1.0.1-3.el8 \
     && systemctl enable crio.service \
     && dnf clean all \
-    && rm -rf /var/cache/yum/*
-
+    && rm -rf /var/cache/yum/* \
 
 RUN echo "Prep for systemd ..." \
     && (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
