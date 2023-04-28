@@ -204,7 +204,7 @@ func (c *buildContext) prePullImagesAndWriteManifests(bits kube.Bits, parsedVers
 		return nil, err
 	}
 
-	pauseImage := "container-registry.oracle.com/olcne/pause:3.6"
+	pauseImage := fmt.Sprintf("container-registry.oracle.com/olcne/pause:%s", getEnvWithDefault("PAUSE_VERSION", "3.7"))
 
 	n := 0
 	for _, image := range requiredImages {

@@ -17,6 +17,7 @@ limitations under the License.
 package nodeimage
 
 import (
+	"os"
 	"path"
 	"regexp"
 	"strings"
@@ -52,4 +53,12 @@ func findSandboxImage(config string) (string, error) {
 
 func dockerBuildOsAndArch(arch string) string {
 	return "linux/" + arch
+}
+
+func getEnvWithDefault(key, defaultValue string) string {
+	value, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultValue
+	}
+	return value
 }
