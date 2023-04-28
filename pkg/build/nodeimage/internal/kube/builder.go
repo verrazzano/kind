@@ -24,5 +24,5 @@ type Builder interface {
 	// an existing build instead
 	Build() (Bits, error)
 
-	OracleCneBuild() (Bits, error)
+	OCNEBuild() (Bits, error)
 }

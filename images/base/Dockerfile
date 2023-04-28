@@ -37,7 +37,6 @@ RUN  yum update -y \
 RUN echo "Adding yum repos ..." \
     && dnf install -y oracle-olcne-release-el8 \
     && dnf config-manager --enable ol8_olcne16 ol8_olcne15 ol8_addons ol8_baseos_latest ol8_appstream ol8_UEKR6 \
-    && dnf config-manager --disable ol8_olcne14 ol8_olcne13 ol8_olcne12 ol8_developer \
     && yum clean all \
     && rm -rf /var/cache/yum/*
 
@@ -80,7 +79,7 @@ RUN echo "Adjusting systemd-tmpfiles timer" \
     && sed -i /usr/lib/systemd/system/systemd-tmpfiles-clean.timer -e 's#OnBootSec=.*#OnBootSec=1min#'
 
 RUN mkdir /license
-COPY LICENSE README.md THIRD_PARTY_LICENSES.txt /license/
+#COPY LICENSE README.md THIRD_PARTY_LICENSES.txt /license/
 
 # squash
 FROM scratch

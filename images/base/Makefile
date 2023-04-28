@@ -17,5 +17,3 @@ include $(CURDIR)/../Makefile.common.in
 
 update-shasums:
 	./update-shasums.sh
-
-include $(CURDIR)/../Makefile.common.in

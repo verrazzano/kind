@@ -163,11 +163,11 @@ func dockerBuildOsAndArch(arch string) string {
 	return "linux/" + arch
 }
 
-func (b *dockerBuilder) OracleCneBuild() (Bits, error) {
+func (b *dockerBuilder) OCNEBuild() (Bits, error) {
 	//cwd, err := os.Getwd()
 	k8sVersion, ok := os.LookupEnv("K8S_VERSION")
 	if !ok {
-		k8sVersion = "v1.23.7"
+		k8sVersion = "v1.24.8"
 	}
 	return &bits{
 		binaryPaths: []string{},

@@ -53,7 +53,7 @@ type buildContext struct {
 func (c *buildContext) Build() (err error) {
 	// ensure kubernetes build is up to date first
 	c.logger.V(0).Info("Starting to build Kubernetes")
-	bits, err := c.builder.OracleCneBuild()
+	bits, err := c.builder.OCNEBuild()
 	if err != nil {
 		c.logger.Errorf("Failed to build Kubernetes: %v", err)
 		return errors.Wrap(err, "failed to build kubernetes")
