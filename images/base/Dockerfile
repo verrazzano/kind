@@ -15,7 +15,12 @@
 # kind node base image
 
 ARG BASE_IMAGE=ghcr.io/oracle/oraclelinux:8
+
 FROM $BASE_IMAGE as build
+ARG PAUSE_IMAGE_TAG
+ARG ETCD_IMAGE_TAG
+ARG DNS_IMAGE_TAG
+ARG K8S_VERSION
 
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
@@ -29,10 +34,14 @@ COPY --chmod=0644 files/etc/sysctl.d/* /etc/sysctl.d/
 COPY --chmod=0644 files/etc/systemd/system/* /etc/systemd/system/
 COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
 
-RUN  yum update -y \
+
+RUN  sed -i "s/container-registry.oracle.com\/olcne\/pause:pause_image_tag/container-registry.oracle.com\/olcne\/pause:${PAUSE_IMAGE_TAG}/g" /etc/crio/crio.conf \
+     && sed -i "s/k8s_version/${K8S_VERSION}/g" /etc/kubeadm.yaml \
+     && sed -i "s/etcd_image_tag/${ETCD_IMAGE_TAG}/g" /etc/kubeadm.yaml \
+     && sed -i "s/dns_image_tag/${DNS_IMAGE_TAG}/g" /etc/kubeadm.yaml \
+     && yum update -y \
      && yum clean all \
      && rm -rf /var/cache/yum/*
-
 
 RUN echo "Adding yum repos ..." \
     && dnf install -y oracle-olcne-release-el8 \
@@ -40,18 +49,11 @@ RUN echo "Adding yum repos ..." \
     && yum clean all \
     && rm -rf /var/cache/yum/*
 
-#RUN echo "Installing Packages ..." \
-#    && yum -y install hostname which vi systemd iptables fuse-overlayfs \
-#    && yum clean all \
-#    && rm -rf /var/cache/yum/*
-
-
 RUN echo "Installing OCNE binaries ..." \
-    #&& yum install -y  https://yum.oracle.com/repo/OracleLinux/OL7/olcne15/x86_64/getPackage/conmon-2.0.26-2.el7.x86_64.rpm  \
-    #&& yum install -y  cri-tools cri-o olcne-utils  \
-    && dnf install -y kubeadm-1.24.8-1.el8 kubectl-1.24.8-1.el8 kubelet-1.24.8-1.el8 \
+    && dnf install -y kubeadm-${K8S_VERSION}-1.el8 kubectl-${K8S_VERSION}-1.el8 kubelet-${K8S_VERSION}-1.el8 \
     && dnf install -y oraclelinux-developer-release-el8 python36-oci-cli olcnectl olcne-api-server olcne-utils \
-    && systemctl enable crio.service \
+    && yum -y install hostname which vi iptables fuse-overlayfs \
+    && dnf -y reinstall systemd \
     && yum clean all \
     && rm -rf /var/cache/yum/*
 
@@ -68,7 +70,8 @@ RUN echo "Prep for systemd ..." \
     rm -f /lib/systemd/system/anaconda.target.wants/*;
 
 
-RUN echo "Enabling kubelet ... " \
+RUN echo "Enabling kubelet and crio... " \
+    && systemctl enable crio.service \
     && systemctl enable kubelet.service
 
 

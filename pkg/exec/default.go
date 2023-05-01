@@ -16,7 +16,10 @@ limitations under the License.
 
 package exec
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 // DefaultCmder is a LocalCmder instance used for convenience, packages
 // originally using os/exec.Command can instead use pkg/kind/exec.Command
@@ -27,6 +30,7 @@ var DefaultCmder = &LocalCmder{}
 
 // Command is a convenience wrapper over DefaultCmder.Command
 func Command(command string, args ...string) Cmd {
+	fmt.Printf("+++ DEBUG CMD and ARGS = %v, %v +++\n", command, args)
 	return DefaultCmder.Command(command, args...)
 }
 

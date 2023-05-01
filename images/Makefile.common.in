@@ -23,7 +23,7 @@ TAG?=$(shell echo "$$(date +v%Y%m%d)-$$(git describe --always --dirty)")
 # the full image tag
 IMAGE?=$(REGISTRY)/$(IMAGE_NAME):$(TAG)
 
-K8S_VERSION ?= v1.24.8
+K8S_VERSION ?= 1.24.8
 ETCD_VERSION ?= 3.5.3
 PAUSE_VERSION ?= 3.7
 DNS_VERSION ?= 1.8.6
@@ -37,7 +37,9 @@ OUTPUT?=
 PROGRESS=auto
 EXTRA_BUILD_OPT?=
 build:
-	docker build $(OUTPUT) --progress=$(PROGRESS) -t ${IMAGE} --pull $(EXTRA_BUILD_OPT) .
+	docker build --build-arg PAUSE_IMAGE_TAG=${PAUSE_VERSION} --build-arg ETCD_IMAGE_TAG=${ETCD_VERSION} \
+	--build-arg DNS_IMAGE_TAG=${DNS_VERSION} --build-arg K8S_VERSION=${K8S_VERSION} \
+	$(OUTPUT) --progress=$(PROGRESS) -t ${IMAGE} --pull $(EXTRA_BUILD_OPT) .
 
 copy-licenses:
 	cp ../../LICENSE ../../README.md ../../THIRD_PARTY_LICENSES.txt ./

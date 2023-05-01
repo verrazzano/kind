@@ -17,6 +17,7 @@ limitations under the License.
 package kube
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -168,6 +169,9 @@ func (b *dockerBuilder) OCNEBuild() (Bits, error) {
 	k8sVersion, ok := os.LookupEnv("K8S_VERSION")
 	if !ok {
 		k8sVersion = "v1.24.8"
+	}
+	if !strings.HasPrefix(k8sVersion, "v") {
+		k8sVersion = fmt.Sprint("v%s", k8sVersion)
 	}
 	return &bits{
 		binaryPaths: []string{},
