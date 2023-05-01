@@ -19,7 +19,7 @@
 
 # start from ubuntu, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much we don't need
-ARG BASE_IMAGE=quay.io/cybozu/ubuntu:22.04
+ARG BASE_IMAGE=ghcr.io/oracle/oraclelinux:8
 FROM $BASE_IMAGE as build
 
 # `docker buildx` automatically sets this arg value
@@ -109,9 +109,13 @@ COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.se
 # This is plenty after we've done initial setup for a node, but before we are
 # likely to try to export logs etc.
 
+RUN echo "Updating Image ..."  \
+    && yum update -y \
+    && yum clean all \
+    && rm -rf /var/cache/yum/*
+
 RUN echo "Installing Packages ..." \
-    && DEBIAN_FRONTEND=noninteractive clean-install \
-      systemd \
+    && yum install -y systemd \
       conntrack iptables iproute2 ethtool socat util-linux mount ebtables kmod \
       libseccomp2 pigz \
       bash ca-certificates curl rsync \
@@ -125,7 +129,9 @@ RUN echo "Installing Packages ..." \
     && rm -f /lib/systemd/system/sockets.target.wants/*initctl* \
     && rm -f /lib/systemd/system/basic.target.wants/* \
     && echo "ReadKMsg=no" >> /etc/systemd/journald.conf \
-    && ln -s "$(which systemd)" /sbin/init
+    && ln -s "$(which systemd)" /sbin/init \
+    && yum clean all \
+    && rm -rf /var/cache/yum/*
 
 RUN echo "Enabling kubelet ... " \
     && systemctl enable kubelet.service
