@@ -69,15 +69,15 @@ ARG CONTAINERD_FUSE_OVERLAYFS_S390X_SHA256SUM="55dae4a2c74b1215ec99591b9197e6a65
 
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
-COPY files/usr/local/bin/* /usr/local/bin/
+COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
 
 # all configs are 0644 (rw- r-- r--)
-COPY files/etc/* /etc/
-COPY files/etc/containerd/* /etc/containerd/
-COPY files/etc/default/* /etc/default/
-COPY files/etc/sysctl.d/* /etc/sysctl.d/
-COPY files/etc/systemd/system/* /etc/systemd/system/
-COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
+COPY --chmod=0644 files/etc/* /etc/
+COPY --chmod=0644 files/etc/containerd/* /etc/containerd/
+COPY --chmod=0644 files/etc/default/* /etc/default/
+COPY --chmod=0644 files/etc/sysctl.d/* /etc/sysctl.d/
+COPY --chmod=0644 files/etc/systemd/system/* /etc/systemd/system/
+COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
 
 # Install dependencies, first from apt, then from release tarballs.
 # NOTE: we use one RUN to minimize layers.
@@ -111,12 +111,12 @@ COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.se
 
 RUN echo "Installing Packages ..."  \
     && yum update -y \
-    && yum install -y systemd \
-      conntrack iptables iproute ethtool socat util-linux ebtables kmod \
+    && yum install -y hostname which vi fuse-overlayfs conntrack iptables iproute ethtool socat util-linux ebtables kmod \
       libseccomp pigz \
       bash ca-certificates curl rsync \
       nfs-utils fuse-overlayfs iscsi-initiator-utils  \
-      jq \
+      jq net-tools \
+    && dnf -y reinstall systemd \
     && yum clean all \
     && rm -rf /var/cache/yum/*
 
