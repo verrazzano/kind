@@ -377,8 +377,8 @@ select_iptables() {
     mode=nft
   fi
   echo "INFO: setting iptables to detected mode: ${mode}" >&2
-  update-alternatives --set iptables "/usr/sbin/iptables-${mode}" > /dev/null
-  update-alternatives --set ip6tables "/usr/sbin/ip6tables-${mode}" > /dev/null
+  update-alternatives --set iptables "/var/lib/alternatives/iptables-${mode}" > /dev/null || failed=1
+  update-alternatives --set ip6tables "/var/lib/alternatives/ip6tables-${mode}" > /dev/null || failed=1
 }
 
 fix_certificate() {
