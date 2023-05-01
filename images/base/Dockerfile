@@ -81,8 +81,6 @@ RUN echo "Ensuring /etc/kubernetes/manifests" \
 RUN echo "Adjusting systemd-tmpfiles timer" \
     && sed -i /usr/lib/systemd/system/systemd-tmpfiles-clean.timer -e 's#OnBootSec=.*#OnBootSec=1min#'
 
-RUN mkdir /license
-#COPY LICENSE README.md THIRD_PARTY_LICENSES.txt /license/
 
 # squash
 FROM scratch
