@@ -109,29 +109,27 @@ COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.se
 # This is plenty after we've done initial setup for a node, but before we are
 # likely to try to export logs etc.
 
-RUN echo "Updating Image ..."  \
+RUN echo "Installing Packages ..."  \
     && yum update -y \
+    && yum install -y systemd \
+      conntrack iptables iproute ethtool socat util-linux ebtables kmod \
+      libseccomp pigz \
+      bash ca-certificates curl rsync \
+      nfs-utils fuse-overlayfs iscsi-initiator-utils  \
+      jq \
     && yum clean all \
     && rm -rf /var/cache/yum/*
 
-RUN echo "Installing Packages ..." \
-    && yum install -y systemd \
-      conntrack iptables iproute2 ethtool socat util-linux mount ebtables kmod \
-      libseccomp2 pigz \
-      bash ca-certificates curl rsync \
-      nfs-common fuse-overlayfs open-iscsi \
-      jq \
-    && find /lib/systemd/system/sysinit.target.wants/ -name "systemd-tmpfiles-setup.service" -delete \
-    && rm -f /lib/systemd/system/multi-user.target.wants/* \
-    && rm -f /etc/systemd/system/*.wants/* \
-    && rm -f /lib/systemd/system/local-fs.target.wants/* \
-    && rm -f /lib/systemd/system/sockets.target.wants/*udev* \
-    && rm -f /lib/systemd/system/sockets.target.wants/*initctl* \
-    && rm -f /lib/systemd/system/basic.target.wants/* \
-    && echo "ReadKMsg=no" >> /etc/systemd/journald.conf \
-    && ln -s "$(which systemd)" /sbin/init \
-    && yum clean all \
-    && rm -rf /var/cache/yum/*
+RUN echo "Prep for systemd ..." \
+    && (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
+    systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+    rm -f /lib/systemd/system/multi-user.target.wants/*;\
+    rm -f /etc/systemd/system/*.wants/*;\
+    rm -f /lib/systemd/system/local-fs.target.wants/*; \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+    rm -f /lib/systemd/system/basic.target.wants/*;\
+    rm -f /lib/systemd/system/anaconda.target.wants/*;
 
 RUN echo "Enabling kubelet ... " \
     && systemctl enable kubelet.service
