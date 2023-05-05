@@ -19,7 +19,7 @@
 
 # start from ubuntu, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much we don't need
-ARG BASE_IMAGE=ghcr.io/oracle/oraclelinux:8
+ARG BASE_IMAGE=ghcr.io/oracle/oraclelinux:7
 FROM $BASE_IMAGE as build
 
 # `docker buildx` automatically sets this arg value
@@ -116,13 +116,13 @@ RUN echo "Installing Packages ..."  \
       bash ca-certificates curl rsync \
       nfs-utils fuse-overlayfs iscsi-initiator-utils  \
       jq net-tools \
-    && dnf -y reinstall systemd \
+    && yum -y reinstall systemd \
     && yum clean all \
     && rm -rf /var/cache/yum/*
 
 RUN echo "Prep for systemd ..." \
-    && (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
-    systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+    && (cd /lib/systemd/system/sysinit.target.wants/; \
+    for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
     rm -f /lib/systemd/system/multi-user.target.wants/*;\
     rm -f /etc/systemd/system/*.wants/*;\
     rm -f /lib/systemd/system/local-fs.target.wants/*; \
