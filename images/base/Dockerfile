@@ -19,7 +19,7 @@
 
 # start from ubuntu, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much we don't need
-ARG BASE_IMAGE=ghcr.io/oracle/oraclelinux:8
+ARG BASE_IMAGE=quay.io/cybozu/ubuntu:22.04
 FROM $BASE_IMAGE as build
 
 # `docker buildx` automatically sets this arg value
@@ -109,27 +109,23 @@ COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.se
 # This is plenty after we've done initial setup for a node, but before we are
 # likely to try to export logs etc.
 
-RUN echo "Installing Packages ..."  \
-    && yum update -y \
-    && yum install -y hostname which vi fuse-overlayfs conntrack iptables iproute ethtool socat util-linux ebtables kmod \
-      libseccomp pigz \
+RUN echo "Installing Packages ..." \
+    && DEBIAN_FRONTEND=noninteractive clean-install \
+      systemd \
+      conntrack iptables iproute2 ethtool socat util-linux mount ebtables kmod \
+      libseccomp2 pigz \
       bash ca-certificates curl rsync \
-      nfs-utils fuse-overlayfs iscsi-initiator-utils  \
-      jq net-tools \
-    && dnf -y reinstall systemd \
-    && yum clean all \
-    && rm -rf /var/cache/yum/*
-
-RUN echo "Prep for systemd ..." \
-    && (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
-    systemd-tmpfiles-setup.service ] || rm -f $i; done); \
-    rm -f /lib/systemd/system/multi-user.target.wants/*;\
-    rm -f /etc/systemd/system/*.wants/*;\
-    rm -f /lib/systemd/system/local-fs.target.wants/*; \
-    rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
-    rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
-    rm -f /lib/systemd/system/basic.target.wants/*;\
-    rm -f /lib/systemd/system/anaconda.target.wants/*;
+      nfs-common fuse-overlayfs open-iscsi \
+      jq \
+    && find /lib/systemd/system/sysinit.target.wants/ -name "systemd-tmpfiles-setup.service" -delete \
+    && rm -f /lib/systemd/system/multi-user.target.wants/* \
+    && rm -f /etc/systemd/system/*.wants/* \
+    && rm -f /lib/systemd/system/local-fs.target.wants/* \
+    && rm -f /lib/systemd/system/sockets.target.wants/*udev* \
+    && rm -f /lib/systemd/system/sockets.target.wants/*initctl* \
+    && rm -f /lib/systemd/system/basic.target.wants/* \
+    && echo "ReadKMsg=no" >> /etc/systemd/journald.conf \
+    && ln -s "$(which systemd)" /sbin/init
 
 RUN echo "Enabling kubelet ... " \
     && systemctl enable kubelet.service
