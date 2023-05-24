@@ -19,7 +19,7 @@
 
 # start from ubuntu, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much we don't need
-ARG BASE_IMAGE=quay.io/cybozu/ubuntu:20.04
+ARG BASE_IMAGE=quay.io/cybozu/ubuntu:22.04
 FROM $BASE_IMAGE as build
 
 # `docker buildx` automatically sets this arg value
@@ -202,6 +202,8 @@ RUN echo "Ensuring /etc/kubernetes/manifests" \
 
 RUN echo "Adjusting systemd-tmpfiles timer" \
     && sed -i /usr/lib/systemd/system/systemd-tmpfiles-clean.timer -e 's#OnBootSec=.*#OnBootSec=1min#'
+
+RUN sed -i '$SYSTEMD_JOURNAL_KEYED_HASH=0' /etc/systemd/journald.conf
 
 # squash
 FROM scratch
