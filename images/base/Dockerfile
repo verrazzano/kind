@@ -203,7 +203,7 @@ RUN echo "Ensuring /etc/kubernetes/manifests" \
 RUN echo "Adjusting systemd-tmpfiles timer" \
     && sed -i /usr/lib/systemd/system/systemd-tmpfiles-clean.timer -e 's#OnBootSec=.*#OnBootSec=1min#'
 
-RUN sed -i '$SYSTEMD_JOURNAL_KEYED_HASH=0' /etc/systemd/journald.conf
+RUN sed -i '$aSYSTEMD_JOURNAL_KEYED_HASH=0' /etc/systemd/journald.conf
 
 # squash
 FROM scratch
