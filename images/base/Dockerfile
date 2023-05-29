@@ -112,6 +112,7 @@ COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.se
 RUN echo "Installing Packages ..." \
     && DEBIAN_FRONTEND=noninteractive clean-install \
       systemd \
+      libsystemd-dev \
       conntrack iptables iproute2 ethtool socat util-linux mount ebtables kmod \
       libseccomp2 pigz \
       bash ca-certificates curl rsync \
@@ -212,6 +213,7 @@ COPY --from=build / /
 # tell systemd that it is in docker (it will check for the container env)
 # https://systemd.io/CONTAINER_INTERFACE/
 ENV container docker
+ENV SYSTEMD_JOURNAL_KEYED_HASH 0
 # systemd exits on SIGRTMIN+3, not SIGTERM (which re-executes it)
 # https://bugzilla.redhat.com/show_bug.cgi?id=1201657
 STOPSIGNAL SIGRTMIN+3
