@@ -25,58 +25,34 @@ FROM $BASE_IMAGE as build
 # `docker buildx` automatically sets this arg value
 ARG TARGETARCH
 
+ARG PAUSE_IMAGE_TAG
+ARG ETCD_IMAGE_TAG
+ARG DNS_IMAGE_TAG
+ARG K8S_VERSION
+
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
 COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
 
 # all configs are 0644 (rw- r-- r--)
 COPY --chmod=0644 files/etc/* /etc/
-COPY --chmod=0644 files/etc/containers/* /etc/containers/
-#COPY --chmod=0644 files/etc/crio/crio.conf.d/* /etc/crio/crio.conf.d/
-COPY --chmod=0644 files/etc/crio.conf /etc/crio/crio.conf
+COPY --chmod=0644 files/etc/crio/crio.conf /etc/crio/crio.conf
 COPY --chmod=0644 files/etc/default/* /etc/default/
 COPY --chmod=0644 files/etc/sysctl.d/* /etc/sysctl.d/
 COPY --chmod=0644 files/etc/systemd/system/* /etc/systemd/system/
 COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
-
-
-# Install dependencies, first from apt, then from release tarballs.
-# NOTE: we use one RUN to minimize layers.
-#
-# First we must ensure that our util scripts are executable.
-#
-# The base image already has a basic userspace + apt but we need to install more packages.
-# Packages installed are broken down into (each on a line):
-# - packages needed to run services (systemd)
-# - packages needed for kubernetes components
-# - packages needed by the container runtime
-# - misc packages kind uses itself
-# - packages that provide semi-core kubernetes functionality
-# After installing packages we cleanup by:
-# - removing unwanted systemd services
-# - disabling kmsg in journald (these log entries would be confusing)
-#
-# Then we install containerd from our nightly build infrastructure, as this
-# build for multiple architectures and allows us to upgrade to patched releases
-# more quickly.
-#
-# Next we download and extract crictl and CNI plugin binaries from upstream.
-#
-# Next we ensure the /etc/kubernetes/manifests directory exists. Normally
-# a kubeadm debian / rpm package would ensure that this exists but we install
-# freshly built binaries directly when we build the node image.
-#
-# Finally we adjust tempfiles cleanup to be 1 minute after "boot" instead of 15m
-# This is plenty after we've done initial setup for a node, but before we are
-# likely to try to export logs etc.
 
 RUN  microdnf  update -y \
      && microdnf  install dnf \
      && rm -rf /var/cache/yum/* \
      && microdnf clean all
 
+RUN  sed -i "s/container-registry.oracle.com\/olcne\/pause:pause_image_tag/container-registry.oracle.com\/olcne\/pause:${PAUSE_IMAGE_TAG}/g" /etc/crio/crio.conf \
+     && sed -i "s/k8s_version/${K8S_VERSION}/g" /etc/kubeadm.yaml \
+     && sed -i "s/etcd_image_tag/${ETCD_IMAGE_TAG}/g" /etc/kubeadm.yaml \
+     && sed -i "s/dns_image_tag/${DNS_IMAGE_TAG}/g" /etc/kubeadm.yaml
 
-RUN echo "Installing Packages ..." \    
+RUN echo "Installing Packages ..." \
     && dnf -y install hostname which vi systemd iptables \
     && dnf clean all \
     && rm -rf /var/cache/yum/*
