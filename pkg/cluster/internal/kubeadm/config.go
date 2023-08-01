@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/kind/pkg/errors"
 
 	"sigs.k8s.io/kind/pkg/internal/apis/config"
-	v "sigs.k8s.io/kind/pkg/internal/version"
+	"sigs.k8s.io/kind/pkg/internal/version"
 )
 
 // ConfigData is supplied to the kubeadm config template, with values populated
@@ -158,9 +158,25 @@ func (c *ConfigData) Derive() {
 	}
 	c.FeatureGatesString = strings.Join(featureGates, ",")
 
-	c.DNSImageTag = v.GetOCNEImageTag(c.KubernetesVersion, "coredns")
-	c.ETCDImageTag = v.GetOCNEImageTag(c.KubernetesVersion, "etcd")
-	c.PauseImageTag = v.GetOCNEImageTag(c.KubernetesVersion, "pause")
+	dnsTag, err := version.GetOCNEImageTag(c.KubernetesVersion, "coredns")
+	if err != nil {
+		fmt.Printf("Unable to fetch tag for corddns %v", err)
+	}
+	c.DNSImageTag = dnsTag
+
+	etcdTag, err := version.GetOCNEImageTag(c.KubernetesVersion, "etcd")
+	if err != nil {
+		fmt.Printf("Unable to fetch tag for etcd %v", err)
+	}
+	c.ETCDImageTag = etcdTag
+
+	pauseImageTag, err := version.GetOCNEImageTag(c.KubernetesVersion, "pause")
+	if err != nil {
+		fmt.Printf("Unable to fetch tag for pause %v", err)
+	}
+
+	c.PauseImageTag = pauseImageTag
+
 	c.ImageRepository = OCNERepository
 
 	// create a sorted key=value,... string of RuntimeConfig
