@@ -63,6 +63,10 @@ RUN echo "Installing OCNE binaries ..." \
     && dnf config-manager --enable ol8_olcne17 ol8_olcne16 ol8_olcne15 ol8_addons ol8_baseos_latest ol8_appstream ol8_UEKR6 \
     && dnf install -y kubelet-1.26.6-1.el8 kubeadm-1.26.6-1.el8 kubectl-1.26.6-1.el8 helm-3.12.0-1.el8 podman\
     && systemctl enable crio.service \
+    && systemctl start crio.service \
+    && rm -rf /etc/cni/net.d/100-crio-bridge.conf \
+    && sudo systemctl restart crio \
+    && sudo systemctl enable kubelet \
     && dnf clean all \
     && rm -rf /var/cache/yum/*
 
