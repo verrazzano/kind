@@ -19,7 +19,6 @@ package kubeadm
 import (
 	"bytes"
 	"fmt"
-	"github.com/verrazzano/kind/pkg/internal/version"
 	"sort"
 	"strings"
 
