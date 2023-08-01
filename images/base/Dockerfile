@@ -19,7 +19,7 @@
 
 # start from ubuntu, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much we don't need
-ARG BASE_IMAGE=ghcr.io/oracle/oraclelinux:8
+ARG BASE_IMAGE=ghcr.io/oracle/oraclelinux:8-slim
 FROM $BASE_IMAGE as build
 
 # `docker buildx` automatically sets this arg value
@@ -31,7 +31,7 @@ COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
 
 # all configs are 0644 (rw- r-- r--)
 COPY --chmod=0644 files/etc/* /etc/
-#COPY --chmod=0644 files/etc/containers/* /etc/containers/
+COPY --chmod=0644 files/etc/containers/* /etc/containers/
 #COPY --chmod=0644 files/etc/crio/crio.conf.d/* /etc/crio/crio.conf.d/
 COPY --chmod=0644 files/etc/crio.conf /etc/crio/crio.conf
 COPY --chmod=0644 files/etc/default/* /etc/default/
@@ -70,9 +70,10 @@ COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/syst
 # This is plenty after we've done initial setup for a node, but before we are
 # likely to try to export logs etc.
 
-RUN  dnf update -y \
-     && dnf clean all \
-     && rm -rf /var/cache/yum/*
+RUN  microdnf  update -y \
+     && microdnf  install dnf \
+     && rm -rf /var/cache/yum/* \
+     && microdnf clean all
 
 
 RUN echo "Installing Packages ..." \    
