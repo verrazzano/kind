@@ -22,3 +22,5 @@ const Token = "abcdef.0123456789abcdef"
 // ObjectName is the name every generated object will have
 // I.E. `metadata:\nname: config`
 const ObjectName = "config"
+
+const OCNERepository = "container-registry.oracle.com/olcne"

@@ -14,5 +14,5 @@
 export EXTRA_BUILD_OPT=--build-arg=TARGETARCH=amd64
 include $(CURDIR)/../Makefile.common.in
 
-update-shasums:
-	./update-shasums.sh
+# update-shasums:
+# 	./update-shasums.sh

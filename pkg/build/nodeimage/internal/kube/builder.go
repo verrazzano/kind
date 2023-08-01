@@ -22,5 +22,5 @@ type Builder interface {
 	// Build returns a Bits and any errors encountered while building Kubernetes.
 	// Some implementations (upstream binaries) may use this step to obtain
 	// an existing build instead
-	Build() (Bits, error)
+	OCNEBuild() (Bits, error)
 }

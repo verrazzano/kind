@@ -53,7 +53,7 @@ type buildContext struct {
 func (c *buildContext) Build() (err error) {
 	// ensure kubernetes build is up to date first
 	c.logger.V(0).Info("Starting to build Kubernetes")
-	bits, err := c.builder.Build()
+	bits, err := c.builder.OCNEBuild()
 	if err != nil {
 		c.logger.Errorf("Failed to build Kubernetes: %v", err)
 		return errors.Wrap(err, "failed to build kubernetes")
@@ -197,36 +197,21 @@ func (c *buildContext) prePullImagesAndWriteManifests(bits kube.Bits, parsedVers
 
 	// gets the list of images required by kubeadm
 	requiredImages, err := exec.OutputLines(cmder.Command(
-		"kubeadm", "config", "images", "list", "--kubernetes-version", bits.Version(),
+		"kubeadm", "config", "images", "list", "--kubernetes-version", bits.Version(), "--config", "/etc/kubeadm.yaml",
 	))
 	if err != nil {
 		return nil, err
 	}
 
-	// replace pause image with our own
-	containerdConfig, err := exec.Output(cmder.Command("cat", containerdConfigPath))
-	if err != nil {
-		return nil, err
-	}
-	pauseImage, err := findSandboxImage(string(containerdConfig))
-	if err != nil {
-		return nil, err
-	}
-	n := 0
-	for _, image := range requiredImages {
-		if !strings.Contains(image, "pause") {
-			requiredImages[n] = image
-			n++
-		}
-	}
-	requiredImages = append(requiredImages[:n], pauseImage)
+	// pauseImage := "container-registry.oracle.com/olcne/pause:3.9"
+	// n := 0
+	// for _, image := range requiredImages {
+	// 	if !strings.Contains(image, "pause") {
+	
 
-	if parsedVersion.LessThan(version.MustParseSemantic("v1.24.0")) {
-		if err := configureContainerdSystemdCgroupFalse(cmder, string(containerdConfig)); err != nil {
-			return nil, err
-		}
-	}
+	// requiredImages = append(requiredImages[:n], pauseImage)
 
+	c.logger.V(9).Infof("prePullImagesAndWriteManifests !!!")
 	// write the default CNI manifest
 	if err := createFile(cmder, defaultCNIManifestLocation, defaultCNIManifest); err != nil {
 		c.logger.Errorf("Image build Failed! Failed write default CNI Manifest: %v", err)
@@ -337,5 +322,6 @@ func (c *buildContext) createBuildContainer() (id string, err error) {
 	if err != nil {
 		return id, errors.Wrap(err, "failed to create build container")
 	}
+	c.logger.V(9).Infof("id = %v\n", id)
 	return id, nil
 }

@@ -99,48 +99,6 @@ overlayfs_preferrable() {
   return 0
 }
 
-configure_containerd() {
-  local snapshotter=${KIND_EXPERIMENTAL_CONTAINERD_SNAPSHOTTER:-}
-
-  # handle userns (rootless)
-  if [[ -n "$userns" ]]; then
-    # enable restrict_oom_score_adj
-    sed -i 's/restrict_oom_score_adj = false/restrict_oom_score_adj = true/' /etc/containerd/config.toml
-    # Use fuse-overlayfs if overlayfs is not preferrable: https://github.com/kubernetes-sigs/kind/issues/2275
-    if [[ -z "$snapshotter" ]] && ! overlayfs_preferrable; then
-      snapshotter="fuse-overlayfs"
-    fi
-  fi
-
-  # if we have not already overridden the snapshotter, attempt to auto select
-  if [[ -z "$snapshotter" ]]; then
-    # we need to switch to 'native' or 'fuse-overlayfs' on zfs
-    container_filesystem="$(stat -f -c %T /kind)"
-    if [[ "$container_filesystem" == 'zfs' ]]; then
-      # if fuse is present, use fuse-overlayfs, else fallback to native
-      # we do not use the ZFS snapshotter because of skew issues vs the host
-      if [[ -e /dev/fuse ]]; then
-        snapshotter="fuse-overlayfs"
-      else
-        snapshotter="native"
-      fi
-    # fuse likely implies fuse-overlayfs, we should switch to fuse-overlayfs (or native)
-    elif [[ "$container_filesystem" == 'fuseblk' ]]; then
-      snapshotter="fuse-overlayfs"
-    fi
-  fi
-
-  # if we've overridden or auto-selected the snapshotter vs the default, update containerd
-  if [[ -n "$snapshotter" ]]; then
-    echo "INFO: changing snapshotter from \"overlayfs\" to \"$snapshotter\""
-    sed -i "s/snapshotter = \"overlayfs\"/snapshotter = \"$snapshotter\"/" /etc/containerd/config.toml
-    if [[ "$snapshotter" = "fuse-overlayfs" ]]; then
-      echo 'INFO: enabling containerd-fuse-overlayfs service'
-      systemctl enable containerd-fuse-overlayfs
-    fi
-  fi
-}
-
 configure_proxy() {
   # ensure all processes receive the proxy settings by default
   # https://www.freedesktop.org/software/systemd/man/systemd-system.conf.html
@@ -377,8 +335,9 @@ select_iptables() {
     mode=nft
   fi
   echo "INFO: setting iptables to detected mode: ${mode}" >&2
-  update-alternatives --set iptables "/usr/sbin/iptables-${mode}" > /dev/null
-  update-alternatives --set ip6tables "/usr/sbin/ip6tables-${mode}" > /dev/null
+  update-alternatives --set /var/lib/alternatives/iptables "/usr/sbin/iptables-${mode}" > /dev/null || failed=1
+  update-alternatives --set /var/lib/alternatives/ip6tables "/usr/sbin/ip6tables-${mode}" > /dev/null || failed=1
+
 }
 
 fix_certificate() {
@@ -496,7 +455,6 @@ validate_userns
 
 # run pre-init fixups
 # NOTE: it's important that we do configure* first in this order to avoid races
-configure_containerd
 configure_proxy
 fix_mount
 fix_cgroup

@@ -86,6 +86,12 @@ type ConfigData struct {
 	// DerivedConfigData contains fields computed from the other fields for use
 	// in the config templates and should only be populated by calling Derive()
 	DerivedConfigData
+
+	DNSImageTag string
+
+	ETCDImageTag string
+
+	PauseImageTag string 
 }
 
 // DerivedConfigData fields are automatically derived by
@@ -189,6 +195,15 @@ controlPlaneEndpoint: "{{ .ControlPlaneEndpoint }}"
 # on docker for mac we have to expose the api server via port forward,
 # so we need to ensure the cert is valid for localhost so we can talk
 # to the cluster after rewriting the kubeconfig to point to localhost
+imageRepository: container-registry.oracle.com/olcne
+kubernetesVersion: 1.26.6
+etcd:
+  local:
+    imageRepository: container-registry.oracle.com/olcne
+    imageTag: 3.5.6
+dns:
+  imageRepository: container-registry.oracle.com/olcne
+  imageTag: v1.9.3
 apiServer:
   certSANs: [localhost, "{{.APIServerAddress}}"]
   extraArgs:
@@ -232,7 +247,7 @@ localAPIEndpoint:
   advertiseAddress: "{{ .AdvertiseAddress }}"
   bindPort: {{.APIBindPort}}
 nodeRegistration:
-  criSocket: "unix:///run/containerd/containerd.sock"
+  criSocket: "unix:///var/run/crio/crio.sock"
   kubeletExtraArgs:
     node-ip: "{{ .NodeAddress }}"
     provider-id: "kind://{{.NodeProvider}}/{{.ClusterName}}/{{.NodeName}}"
@@ -250,7 +265,7 @@ controlPlane:
     bindPort: {{.APIBindPort}}
 {{- end }}
 nodeRegistration:
-  criSocket: "unix:///run/containerd/containerd.sock"
+  criSocket: "unix:///var/run/crio/crio.sock"
   kubeletExtraArgs:
     node-ip: "{{ .NodeAddress }}"
     provider-id: "kind://{{.NodeProvider}}/{{.ClusterName}}/{{.NodeName}}"
@@ -369,7 +384,7 @@ localAPIEndpoint:
   advertiseAddress: "{{ .AdvertiseAddress }}"
   bindPort: {{.APIBindPort}}
 nodeRegistration:
-  criSocket: "unix:///run/containerd/containerd.sock"
+  criSocket: "unix:///var/run/crio/crio.sock"
   kubeletExtraArgs:
     node-ip: "{{ .NodeAddress }}"
     provider-id: "kind://{{.NodeProvider}}/{{.ClusterName}}/{{.NodeName}}"
@@ -387,7 +402,7 @@ controlPlane:
     bindPort: {{.APIBindPort}}
 {{- end }}
 nodeRegistration:
-  criSocket: "unix:///run/containerd/containerd.sock"
+  criSocket: "unix:///var/run/crio/crio.sock"
   kubeletExtraArgs:
     node-ip: "{{ .NodeAddress }}"
     provider-id: "kind://{{.NodeProvider}}/{{.ClusterName}}/{{.NodeName}}"

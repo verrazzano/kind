@@ -32,7 +32,8 @@ fi
 # We only need to do this setup on linux hosts
 if [ "$(uname)" == 'Linux' ]; then
   # NOTE: this is pinned to a digest for a reason!
-  docker run --rm --privileged tonistiigi/binfmt:qemu-v6.2.0-26@sha256:5bf63a53ad6222538112b5ced0f1afb8509132773ea6dd3991a197464962854e --install all
+  #docker run --rm --privileged tonistiigi/binfmt:qemu-v6.2.0-26@sha256:5bf63a53ad6222538112b5ced0f1afb8509132773ea6dd3991a197464962854e --install all
+  docker run --rm --privileged iad.ocir.io/odsbuilddev/aamitra/dev/qemu-kind-builder:v6.2.0-26 --install all
 fi
 
 # Ensure we use a builder that can leverage it (the default on linux will not)
