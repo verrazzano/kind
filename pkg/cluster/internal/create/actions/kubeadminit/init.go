@@ -67,6 +67,16 @@ func (a *action) Execute(ctx *actions.ActionContext) error {
 		skipPhases += ",addon/kube-proxy"
 	}
 
+	// enable crio
+	crioCmd := node.Command(
+		// init because this is the control plane node
+		"systemctl",
+		"restart",
+		"crio.service",
+	)
+	crioLines, err := exec.CombinedOutputLines(crioCmd)
+	ctx.Logger.V(9).Info(strings.Join(crioLines, "\n"))
+
 	// run kubeadm
 	cmd := node.Command(
 		// init because this is the control plane node

@@ -52,21 +52,14 @@ RUN  sed -i "s/container-registry.oracle.com\/olcne\/pause:pause_image_tag/conta
      && sed -i "s/etcd_image_tag/${ETCD_IMAGE_TAG}/g" /etc/kubeadm.yaml \
      && sed -i "s/dns_image_tag/${DNS_IMAGE_TAG}/g" /etc/kubeadm.yaml
 
-RUN echo "Installing Packages ..." \
-    && dnf -y install hostname which vi systemd iptables \
-    && dnf clean all \
-    && rm -rf /var/cache/yum/*
-
 
 RUN echo "Installing OCNE binaries ..." \
     && dnf install -y oracle-olcne-release-el8  \
     && dnf config-manager --enable ol8_olcne17 ol8_olcne16 ol8_olcne15 ol8_addons ol8_baseos_latest ol8_appstream ol8_UEKR6 \
-    && dnf install -y kubelet-1.26.6-1.el8 kubeadm-1.26.6-1.el8 kubectl-1.26.6-1.el8 helm-3.12.0-1.el8 podman\
-    && systemctl enable crio.service \
-    && systemctl start crio.service \
-    && rm -rf /etc/cni/net.d/100-crio-bridge.conf \
-    && sudo systemctl restart crio \
-    && sudo systemctl enable kubelet \
+    && dnf install -y kubelet-1.26.6-1.el8 kubeadm-1.26.6-1.el8 kubectl-1.26.6-1.el8 helm-3.12.0-1.el8 podman \
+    && dnf install -y oraclelinux-developer-release-el8 python36-oci-cli olcnectl olcne-api-server olcne-utils \
+    && yum -y install hostname which vi iptables fuse-overlayfs \
+    && dnf -y reinstall systemd \
     && dnf clean all \
     && rm -rf /var/cache/yum/*
 
@@ -81,6 +74,11 @@ RUN echo "Prep for systemd ..." \
     rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
     rm -f /lib/systemd/system/basic.target.wants/*;\
     rm -f /lib/systemd/system/anaconda.target.wants/*;
+
+RUN echo "Enabling kubelet and crio... " \
+    && systemctl enable crio.service \
+    && systemctl enable kubelet.service
+
 
 RUN echo "Ensuring /etc/kubernetes/manifests" \
     && mkdir -p /etc/kubernetes/manifests
