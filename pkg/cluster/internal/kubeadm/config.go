@@ -19,6 +19,7 @@ package kubeadm
 import (
 	"bytes"
 	"fmt"
+	"github.com/verrazzano/kind/pkg/internal/version"
 	"sort"
 	"strings"
 
@@ -27,7 +28,7 @@ import (
 	"sigs.k8s.io/kind/pkg/errors"
 
 	"sigs.k8s.io/kind/pkg/internal/apis/config"
-	"sigs.k8s.io/kind/pkg/internal/version"
+	v "sigs.k8s.io/kind/pkg/internal/version"
 )
 
 // ConfigData is supplied to the kubeadm config template, with values populated
@@ -91,7 +92,9 @@ type ConfigData struct {
 
 	ETCDImageTag string
 
-	PauseImageTag string 
+	PauseImageTag string
+
+	ImageRepository string
 }
 
 // DerivedConfigData fields are automatically derived by
@@ -156,6 +159,11 @@ func (c *ConfigData) Derive() {
 	}
 	c.FeatureGatesString = strings.Join(featureGates, ",")
 
+	c.DNSImageTag = v.GetOCNEImageTag(c.KubernetesVersion, "coredns")
+	c.ETCDImageTag = v.GetOCNEImageTag(c.KubernetesVersion, "etcd")
+	c.PauseImageTag = v.GetOCNEImageTag(c.KubernetesVersion, "pause")
+	c.ImageRepository = OCNERepository
+
 	// create a sorted key=value,... string of RuntimeConfig
 	// first get sorted list of FeatureGate keys
 	runtimeConfigKeys := make([]string, 0, len(c.RuntimeConfig))
@@ -195,15 +203,14 @@ controlPlaneEndpoint: "{{ .ControlPlaneEndpoint }}"
 # on docker for mac we have to expose the api server via port forward,
 # so we need to ensure the cert is valid for localhost so we can talk
 # to the cluster after rewriting the kubeconfig to point to localhost
-imageRepository: container-registry.oracle.com/olcne
-kubernetesVersion: 1.26.6
+imageRepository: {{.ImageRepository}}
 etcd:
   local:
-    imageRepository: container-registry.oracle.com/olcne
-    imageTag: 3.5.6
+    imageRepository: {{.ImageRepository}}
+    imageTag: {{.ETCDImageTag}}
 dns:
-  imageRepository: container-registry.oracle.com/olcne
-  imageTag: v1.9.3
+  imageRepository: {{.ImageRepository}}
+  imageTag: {{.DNSImageTag}}
 apiServer:
   certSANs: [localhost, "{{.APIServerAddress}}"]
   extraArgs:
@@ -341,6 +348,14 @@ controlPlaneEndpoint: "{{ .ControlPlaneEndpoint }}"
 # on docker for mac we have to expose the api server via port forward,
 # so we need to ensure the cert is valid for localhost so we can talk
 # to the cluster after rewriting the kubeconfig to point to localhost
+imageRepository: {{.ImageRepository}}
+etcd:
+  local:
+    imageRepository: {{.ImageRepository}}
+    imageTag: {{.ETCDImageTag}}
+dns:
+  imageRepository: {{.ImageRepository}}
+  imageTag: {{.DNSImageTag}}
 apiServer:
   certSANs: [localhost, "{{.APIServerAddress}}"]
   extraArgs:

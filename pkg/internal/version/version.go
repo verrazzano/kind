@@ -19,7 +19,9 @@ package version
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"regexp"
+	"sigs.k8s.io/yaml"
 	"strconv"
 	"strings"
 )
@@ -322,4 +324,57 @@ func (v *Version) Compare(other string) (int, error) {
 		return 0, err
 	}
 	return v.compareInternal(ov), nil
+}
+
+func GetK8sVersionOCNEMetadata(K8sVersion string) (interface{}, error) {
+	data, err := os.ReadFile("kubernetes-versions.yaml")
+	result := make(map[string]interface{})
+	if err != nil {
+		return nil, err
+	}
+	var kubeVersionPrecise string
+	if strings.HasPrefix(K8sVersion, "v") {
+		kubeVersionPrecise = strings.Trim(K8sVersion, "v")
+	} else {
+		kubeVersionPrecise = K8sVersion
+	}
+	fmt.Println(kubeVersionPrecise)
+
+	err = yaml.Unmarshal(data, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result[kubeVersionPrecise], nil
+
+}
+
+func GetOCNEImageTag(K8sVersion, imageName string) (string, error) {
+	ocneData := make(map[string]interface{})
+	ocneRawData, err := GetK8sVersionOCNEMetadata(K8sVersion)
+	if err != nil {
+		return "", err
+	}
+	dataB, err := yaml.Marshal(ocneRawData)
+	if err != nil {
+		return "", err
+	}
+
+	err = yaml.Unmarshal(dataB, &ocneData)
+	if err != nil {
+		return "", err
+	}
+
+	ocneContainerImageData := make(map[string]interface{})
+	ocneContainerImageRawData := ocneData["container-images"]
+	dataB, err = yaml.Marshal(ocneContainerImageRawData)
+	if err != nil {
+		return "", err
+	}
+
+	err = yaml.Unmarshal(dataB, &ocneContainerImageData)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s", ocneContainerImageData[strings.ToLower(imageName)]), nil
+
 }
