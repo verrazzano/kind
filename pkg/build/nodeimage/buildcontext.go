@@ -197,7 +197,7 @@ func (c *buildContext) prePullImagesAndWriteManifests(bits kube.Bits, parsedVers
 
 	// gets the list of images required by kubeadm
 	requiredImages, err := exec.OutputLines(cmder.Command(
-		"kubeadm", "config", "images", "list", "--kubernetes-version", bits.Version(), "--config", "/etc/kubeadm.yaml", "--cri-socket", "/var/run/crio/crio.sock", "--v=9",
+		"kubeadm", "config", "images", "list", "--kubernetes-version", bits.Version(), "--config", "/etc/kubeadm.yaml", "--v=9",
 	))
 	if err != nil {
 		return nil, err
