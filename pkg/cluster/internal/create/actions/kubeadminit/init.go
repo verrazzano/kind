@@ -85,8 +85,6 @@ func (a *action) Execute(ctx *actions.ActionContext) error {
 		// specify our generated config file
 		"--config=/kind/kubeadm.conf",
 		"--skip-token-print",
-		"--cri-socket",
-		"/var/run/crio/crio.sock",
 		// increase verbosity for debugging
 		"--v=9",
 	)
