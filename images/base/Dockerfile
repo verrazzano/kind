@@ -58,8 +58,8 @@ RUN  sed -i "s/container-registry.oracle.com\/olcne\/pause:pause_image_tag/conta
 RUN echo "Installing OCNE binaries ..." \
     && dnf install -y oracle-olcne-release-el8  \
     && dnf config-manager --enable ol8_olcne17 ol8_olcne16 ol8_olcne15 ol8_addons ol8_baseos_latest ol8_appstream ol8_UEKR6 \
-    && dnf install -y kubelet-1.26.6-1.el8 kubeadm-1.26.6-1.el8 kubectl-1.26.6-1.el8 helm-3.12.0-1.el8 podman \
-    && dnf install -y oraclelinux-developer-release-el8 python36-oci-cli olcnectl olcne-api-server olcne-utils \
+    && dnf install -y kubelet-${K8S_VERSION}-1.el8 kubeadm-${K8S_VERSION}-1.el8 kubectl-${K8S_VERSION}-1.el8 helm-3.12.0-1.el8 podman \
+    && dnf install -y oraclelinux-developer-release-el8 python36-oci-cli olcne-utils \
     && yum -y install hostname which vi iptables fuse-overlayfs \
     && dnf -y reinstall systemd \
     && dnf clean all \
@@ -89,10 +89,7 @@ RUN echo "Adjusting systemd-tmpfiles timer" \
     && sed -i /usr/lib/systemd/system/systemd-tmpfiles-clean.timer -e 's#OnBootSec=.*#OnBootSec=1min#'
 
 # squash
-FROM ghcr.io/oracle/oraclelinux:8-slim
-RUN  microdnf  update -y \
-     && rm -rf /var/cache/yum/* \
-     && microdnf clean all
+FROM scratch
 
 COPY --from=build / /
 
