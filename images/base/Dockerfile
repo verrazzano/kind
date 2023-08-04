@@ -44,7 +44,6 @@ COPY files/etc/default/* /etc/default/
 COPY files/etc/sysctl.d/* /etc/sysctl.d/
 COPY files/etc/systemd/system/* /etc/systemd/system/
 COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
-COPY files/kubernetes-versions.yaml /kubernetes-versions.yaml
 
 RUN  microdnf  update -y \
      && microdnf  install dnf \
