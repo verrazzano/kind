@@ -29,6 +29,7 @@ ARG PAUSE_IMAGE_TAG
 ARG ETCD_IMAGE_TAG
 ARG DNS_IMAGE_TAG
 ARG K8S_VERSION
+ARG K8S_PACKAGE
 
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
@@ -43,6 +44,7 @@ COPY files/etc/default/* /etc/default/
 COPY files/etc/sysctl.d/* /etc/sysctl.d/
 COPY files/etc/systemd/system/* /etc/systemd/system/
 COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
+COPY files/kubernetes-versions.yaml /kubernetes-versions.yaml
 
 RUN  microdnf  update -y \
      && microdnf  install dnf \
@@ -54,13 +56,12 @@ RUN  sed -i "s/container-registry.oracle.com\/olcne\/pause:pause_image_tag/conta
      && sed -i "s/etcd_image_tag/${ETCD_IMAGE_TAG}/g" /etc/kubeadm.yaml \
      && sed -i "s/dns_image_tag/${DNS_IMAGE_TAG}/g" /etc/kubeadm.yaml
 
-
 RUN echo "Installing OCNE binaries ..." \
     && dnf install -y oracle-olcne-release-el8  \
     && dnf config-manager --enable ol8_olcne17 ol8_olcne16 ol8_olcne15 ol8_addons ol8_baseos_latest ol8_appstream ol8_UEKR6 \
-    && dnf install -y kubelet-1.26.6-1.el8 kubeadm-1.26.6-1.el8 kubectl-1.26.6-1.el8 helm-3.12.0-1.el8 podman \
+    && dnf install -y kubelet-${K8S_PACKAGE}.el8 kubeadm-${K8S_PACKAGE}.el8 kubectl-${K8S_PACKAGE}.el8 podman \
     && dnf install -y oraclelinux-developer-release-el8 python36-oci-cli olcnectl olcne-api-server olcne-utils \
-    && yum -y install hostname which vi iptables fuse-overlayfs \
+    && dnf -y install hostname which vi iptables fuse-overlayfs \
     && dnf -y reinstall systemd \
     && dnf clean all \
     && rm -rf /var/cache/yum/*
