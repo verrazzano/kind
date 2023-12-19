@@ -17,26 +17,25 @@
 # For systemd + docker configuration used below, see the following references:
 # https://systemd.io/CONTAINER_INTERFACE/
 
-# start from debian slim, this image is reasonably small as a starting point
-# for a kubernetes node image, it doesn't contain much (anything?) we don't need
-# this stage will install basic files and packages
-ARG BASE_IMAGE=debian:bullseye-slim
-FROM $BASE_IMAGE as base
+# start from ubuntu, this image is reasonably small as a starting point
+# for a kubernetes node image, it doesn't contain much we don't need
+ARG BASE_IMAGE=quay.io/cybozu/ubuntu:20.04
+FROM $BASE_IMAGE as build
 
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
-COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
-COPY --chmod=0755 files/kind/bin/* /kind/bin/
+COPY files/usr/local/bin/* /usr/local/bin/
+COPY files/kind/bin/* /kind/bin/
 
 # all non-scripts are 0644 (rw- r-- r--)
-COPY --chmod=0644 files/kind/* /kind/
-COPY --chmod=0644 files/LICENSES/* /LICENSES/*
-COPY --chmod=0644 files/etc/* /etc/
-COPY --chmod=0644 files/etc/containerd/* /etc/containerd/
-COPY --chmod=0644 files/etc/default/* /etc/default/
-COPY --chmod=0644 files/etc/sysctl.d/* /etc/sysctl.d/
-COPY --chmod=0644 files/etc/systemd/system/* /etc/systemd/system/
-COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
+COPY files/kind/* /kind/
+COPY files/LICENSES/* /LICENSES/*
+COPY files/etc/* /etc/
+COPY files/etc/containerd/* /etc/containerd/
+COPY files/etc/default/* /etc/default/
+COPY files/etc/sysctl.d/* /etc/sysctl.d/
+COPY files/etc/systemd/system/* /etc/systemd/system/
+COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
 
 # Install dependencies, first from apt, then from release tarballs.
 # NOTE: we use one RUN to minimize layers.

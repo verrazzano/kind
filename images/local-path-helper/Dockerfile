@@ -29,7 +29,8 @@ RUN apt update && apt install -y --no-install-recommends bash
 RUN ln -sf /bin/bash /bin/sh
 
 # copy in script for staging distro provided binary to distroless
-COPY --chmod=0755 stage-binary-and-deps.sh /usr/local/bin/
+COPY stage-binary-and-deps.sh /usr/local/bin/
+RUN chmod 0775 /usr/local/bin/stage-binary-and-deps.sh
 
 # local-path-provisioner needs these things for the helper pod
 # TODO: we could probably coerce local-path-provisioner to use a small binary
