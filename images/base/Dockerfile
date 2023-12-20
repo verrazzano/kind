@@ -118,7 +118,8 @@ RUN eval "$(gimme "${GO_VERSION}")" \
 
 # stage for building containerd
 FROM go-build as build-containerd
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG CONTAINERD_VERSION="v1.7.1"
 ARG CONTAINERD_CLONE_URL="https://github.com/containerd/containerd"
 # we don't build with optional snapshotters, we never select any of these
@@ -135,7 +136,8 @@ RUN git clone --filter=tree:0 "${CONTAINERD_CLONE_URL}" /containerd \
 
 # stage for building runc
 FROM go-build as build-runc
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG RUNC_VERSION="v1.1.7"
 ARG RUNC_CLONE_URL="https://github.com/opencontainers/runc"
 RUN git clone --filter=tree:0 "${RUNC_CLONE_URL}" /runc \
@@ -148,7 +150,8 @@ RUN git clone --filter=tree:0 "${RUNC_CLONE_URL}" /runc \
 
 # stage for building crictl
 FROM go-build as build-crictl
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG CRI_TOOLS_CLONE_URL="https://github.com/kubernetes-sigs/cri-tools"
 ARG CRICTL_VERSION="v1.27.0"
 RUN git clone --filter=tree:0 "${CRI_TOOLS_CLONE_URL}" /cri-tools \
@@ -161,7 +164,8 @@ RUN git clone --filter=tree:0 "${CRI_TOOLS_CLONE_URL}" /cri-tools \
 
 # stage for building cni-plugins
 FROM go-build as build-cni
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG CNI_PLUGINS_VERSION="v1.3.0"
 ARG CNI_PLUGINS_CLONE_URL="https://github.com/containernetworking/plugins"
 RUN git clone --filter=tree:0 "${CNI_PLUGINS_CLONE_URL}" /cni-plugins \
@@ -181,7 +185,8 @@ RUN git clone --filter=tree:0 "${CNI_PLUGINS_CLONE_URL}" /cni-plugins \
 
 # stage for building containerd-fuse-overlayfs
 FROM go-build as build-fuse-overlayfs
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG CONTAINERD_FUSE_OVERLAYFS_VERSION="v1.0.5"
 ARG CONTAINERD_FUSE_OVERLAYFS_CLONE_URL="https://github.com/containerd/fuse-overlayfs-snapshotter"
 RUN git clone --filter=tree:0 "${CONTAINERD_FUSE_OVERLAYFS_CLONE_URL}" /fuse-overlayfs-snapshotter \
