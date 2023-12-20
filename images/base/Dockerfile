@@ -98,9 +98,12 @@ RUN echo "Ensuring /etc/kubernetes/manifests" \
 # platform and only the files needed for building
 # We will copy the built binaries from later stages to the final stage(s)
 FROM --platform=$BUILDPLATFORM $BASE_IMAGE as go-build
-COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
-COPY --chmod=0755 scripts/third_party/gimme/gimme /usr/local/bin/
-COPY --chmod=0755 scripts/target-cc /usr/local/bin/
+COPY files/usr/local/bin/* /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/*
+COPY scripts/third_party/gimme/gimme /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/gimme
+COPY scripts/target-cc /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/target-cc
 # tools needed at build-time only
 # first ensure we can install packages for both architectures
 RUN dpkg --add-architecture arm64 && dpkg --add-architecture amd64 \

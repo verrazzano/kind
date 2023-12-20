@@ -29,5 +29,6 @@ RUN microdnf -y upgrade && \
 FROM ghcr.io/oracle/oraclelinux:8-slim
 COPY --from=0 /usr/local/bin/local-path-provisioner /usr/local/bin/local-path-provisioner
 COPY --from=0 /_LICENSES/* /LICENSES/
-COPY --chmod=0644 files/LICENSES/* /LICENSES/*
+COPY files/LICENSES/* /LICENSES/*
+RUN chmod 0644 /LICENSES/*
 ENTRYPOINT /usr/local/bin/local-path-provisioner

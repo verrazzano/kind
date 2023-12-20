@@ -16,7 +16,8 @@
 # NOTE: the actual go version will be overridden
 FROM --platform=$BUILDPLATFORM golang:latest
 WORKDIR /go/src
-COPY --chmod=0755 scripts/third_party/gimme/gimme /usr/local/bin/
+COPY scripts/third_party/gimme/gimme /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/gimme
 # make deps fetching cacheable
 COPY go.mod go.sum ./
 # set by makefile to .go-version
@@ -35,5 +36,6 @@ RUN eval "$(gimme "${GO_VERSION}")" \
 FROM registry.k8s.io/build-image/distroless-iptables:v0.2.3
 COPY --from=0 --chown=root:root ./go/src/kindnetd /bin/kindnetd
 COPY --from=0 /_LICENSES/* /LICENSES/
-COPY --chmod=0644 files/LICENSES/* /LICENSES/*
+COPY files/LICENSES/* /LICENSES/*
+RUN chmod 0644 /LICENSES/*
 CMD ["/bin/kindnetd"]
