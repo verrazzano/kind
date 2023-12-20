@@ -41,8 +41,9 @@ build:
 	docker build $(OUTPUT) --progress=$(PROGRESS) -t ${IMAGE} --pull --build-arg GO_VERSION=$(GO_VERSION) $(EXTRA_BUILD_OPT) .
 
 # push the cross built image
-push: OUTPUT=--push
+#push: OUTPUT=--push
 push: build
+	docker push ${IMAGE}
 
 # quick can be used to do a build that will be imported into the local docker
 # for sanity checking before doing a cross build push
