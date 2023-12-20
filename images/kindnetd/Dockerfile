@@ -31,7 +31,7 @@ RUN CGO_ENABLED=0 go build -o ./kindnetd ./cmd/kindnetd
 # build real kindnetd image
 FROM registry.k8s.io/build-image/distroless-iptables:v0.2.3
 COPY --from=0 --chown=root:root ./go/src/kindnetd /bin/kindnetd
-COPY --from=0 /_LICENSES/* /LICENSES/
+COPY --from=0 /_LICENSES/* /LICENSES/ || true
 COPY files/LICENSES/* /LICENSES/*
 RUN chmod 0644 /LICENSES/*
 CMD ["/bin/kindnetd"]
