@@ -97,7 +97,7 @@ RUN echo "Ensuring /etc/kubernetes/manifests" \
 # This is also why we start again FROM the same base image but a different
 # platform and only the files needed for building
 # We will copy the built binaries from later stages to the final stage(s)
-FROM --platform=$BUILDPLATFORM $BASE_IMAGE as go-build
+FROM $BASE_IMAGE as go-build
 COPY files/usr/local/bin/* /usr/local/bin/
 RUN chmod 0755 /usr/local/bin/*
 COPY scripts/third_party/gimme/gimme /usr/local/bin/
