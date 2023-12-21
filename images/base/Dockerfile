@@ -17,26 +17,25 @@
 # For systemd + docker configuration used below, see the following references:
 # https://systemd.io/CONTAINER_INTERFACE/
 
-# start from debian slim, this image is reasonably small as a starting point
-# for a kubernetes node image, it doesn't contain much (anything?) we don't need
-# this stage will install basic files and packages
-ARG BASE_IMAGE=debian:bullseye-slim
+# start from ubuntu, this image is reasonably small as a starting point
+# for a kubernetes node image, it doesn't contain much we don't need
+ARG BASE_IMAGE=quay.io/cybozu/ubuntu:20.04
 FROM $BASE_IMAGE as base
 
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
-COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
-COPY --chmod=0755 files/kind/bin/* /kind/bin/
+COPY files/usr/local/bin/* /usr/local/bin/
+COPY files/kind/bin/* /kind/bin/
 
 # all non-scripts are 0644 (rw- r-- r--)
-COPY --chmod=0644 files/kind/* /kind/
-COPY --chmod=0644 files/LICENSES/* /LICENSES/*
-COPY --chmod=0644 files/etc/* /etc/
-COPY --chmod=0644 files/etc/containerd/* /etc/containerd/
-COPY --chmod=0644 files/etc/default/* /etc/default/
-COPY --chmod=0644 files/etc/sysctl.d/* /etc/sysctl.d/
-COPY --chmod=0644 files/etc/systemd/system/* /etc/systemd/system/
-COPY --chmod=0644 files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
+COPY files/kind/* /kind/
+COPY files/LICENSES/* /LICENSES/*
+COPY files/etc/* /etc/
+COPY files/etc/containerd/* /etc/containerd/
+COPY files/etc/default/* /etc/default/
+COPY files/etc/sysctl.d/* /etc/sysctl.d/
+COPY files/etc/systemd/system/* /etc/systemd/system/
+COPY files/etc/systemd/system/kubelet.service.d/* /etc/systemd/system/kubelet.service.d/
 
 # Install dependencies, first from apt, then from release tarballs.
 # NOTE: we use one RUN to minimize layers.
@@ -98,16 +97,19 @@ RUN echo "Ensuring /etc/kubernetes/manifests" \
 # This is also why we start again FROM the same base image but a different
 # platform and only the files needed for building
 # We will copy the built binaries from later stages to the final stage(s)
-FROM --platform=$BUILDPLATFORM $BASE_IMAGE as go-build
-COPY --chmod=0755 files/usr/local/bin/* /usr/local/bin/
-COPY --chmod=0755 scripts/third_party/gimme/gimme /usr/local/bin/
-COPY --chmod=0755 scripts/target-cc /usr/local/bin/
+FROM $BASE_IMAGE as go-build
+COPY files/usr/local/bin/* /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/*
+COPY scripts/third_party/gimme/gimme /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/gimme
+COPY scripts/target-cc /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/target-cc
 # tools needed at build-time only
 # first ensure we can install packages for both architectures
-RUN dpkg --add-architecture arm64 && dpkg --add-architecture amd64 \
+RUN  dpkg --add-architecture amd64 \
     && clean-install bash ca-certificates curl git make pkg-config \
-    crossbuild-essential-amd64 crossbuild-essential-arm64 \
-    libseccomp-dev:amd64 libseccomp-dev:arm64
+    crossbuild-essential-amd64\
+    libseccomp-dev:amd64
 # set by makefile to .go-version
 ARG GO_VERSION
 RUN eval "$(gimme "${GO_VERSION}")" \
@@ -116,7 +118,8 @@ RUN eval "$(gimme "${GO_VERSION}")" \
 
 # stage for building containerd
 FROM go-build as build-containerd
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG CONTAINERD_VERSION="v1.7.1"
 ARG CONTAINERD_CLONE_URL="https://github.com/containerd/containerd"
 # we don't build with optional snapshotters, we never select any of these
@@ -133,7 +136,8 @@ RUN git clone --filter=tree:0 "${CONTAINERD_CLONE_URL}" /containerd \
 
 # stage for building runc
 FROM go-build as build-runc
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG RUNC_VERSION="v1.1.7"
 ARG RUNC_CLONE_URL="https://github.com/opencontainers/runc"
 RUN git clone --filter=tree:0 "${RUNC_CLONE_URL}" /runc \
@@ -146,7 +150,8 @@ RUN git clone --filter=tree:0 "${RUNC_CLONE_URL}" /runc \
 
 # stage for building crictl
 FROM go-build as build-crictl
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG CRI_TOOLS_CLONE_URL="https://github.com/kubernetes-sigs/cri-tools"
 ARG CRICTL_VERSION="v1.27.0"
 RUN git clone --filter=tree:0 "${CRI_TOOLS_CLONE_URL}" /cri-tools \
@@ -159,7 +164,8 @@ RUN git clone --filter=tree:0 "${CRI_TOOLS_CLONE_URL}" /cri-tools \
 
 # stage for building cni-plugins
 FROM go-build as build-cni
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG CNI_PLUGINS_VERSION="v1.3.0"
 ARG CNI_PLUGINS_CLONE_URL="https://github.com/containernetworking/plugins"
 RUN git clone --filter=tree:0 "${CNI_PLUGINS_CLONE_URL}" /cni-plugins \
@@ -179,7 +185,8 @@ RUN git clone --filter=tree:0 "${CNI_PLUGINS_CLONE_URL}" /cni-plugins \
 
 # stage for building containerd-fuse-overlayfs
 FROM go-build as build-fuse-overlayfs
-ARG TARGETARCH GO_VERSION
+ARG TARGETARCH
+ARG GO_VERSION
 ARG CONTAINERD_FUSE_OVERLAYFS_VERSION="v1.0.5"
 ARG CONTAINERD_FUSE_OVERLAYFS_CLONE_URL="https://github.com/containerd/fuse-overlayfs-snapshotter"
 RUN git clone --filter=tree:0 "${CONTAINERD_FUSE_OVERLAYFS_CLONE_URL}" /fuse-overlayfs-snapshotter \

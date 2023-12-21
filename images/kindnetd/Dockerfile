@@ -13,27 +13,26 @@
 # limitations under the License.
 
 # first stage build kindnetd binary
-# NOTE: the actual go version will be overridden
-FROM --platform=$BUILDPLATFORM golang:latest
+# NOTE: tentatively follow upstream kubernetes go version based on k8s in go.mod
+FROM ghcr.io/oracle/oraclelinux:8-slim
 WORKDIR /go/src
-COPY --chmod=0755 scripts/third_party/gimme/gimme /usr/local/bin/
+COPY scripts/third_party/gimme/gimme /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/gimme
 # make deps fetching cacheable
 COPY go.mod go.sum ./
-# set by makefile to .go-version
-ARG GO_VERSION
-RUN eval "$(gimme "${GO_VERSION}")" \
-    && go mod download \
-    && GOBIN=/usr/local/bin go install github.com/google/go-licenses@latest
+RUN microdnf -y upgrade && \
+    microdnf -y module enable go-toolset:ol8 && \
+    microdnf -y install go-toolset && \
+    go mod download
 # build
 COPY . .
-ARG TARGETARCH
-RUN eval "$(gimme "${GO_VERSION}")" \
-    && CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o ./kindnetd ./cmd/kindnetd \
-    && GOARCH=$TARGETARCH go-licenses save --save_path=/_LICENSES ./cmd/kindnetd
+RUN CGO_ENABLED=0 go build -o ./kindnetd ./cmd/kindnetd
 
 # build real kindnetd image
 FROM registry.k8s.io/build-image/distroless-iptables:v0.2.3
 COPY --from=0 --chown=root:root ./go/src/kindnetd /bin/kindnetd
-COPY --from=0 /_LICENSES/* /LICENSES/
-COPY --chmod=0644 files/LICENSES/* /LICENSES/*
+# TBD: files not found?
+#COPY --from=0 /_LICENSES/* /LICENSES/
+COPY files/LICENSES/* /LICENSES/*
+RUN chmod 0644 /LICENSES/*
 CMD ["/bin/kindnetd"]
