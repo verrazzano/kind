@@ -20,7 +20,7 @@
 # start from ubuntu, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much we don't need
 ARG BASE_IMAGE=quay.io/cybozu/ubuntu:20.04
-FROM $BASE_IMAGE as build
+FROM $BASE_IMAGE as base
 
 # copy in static files
 # all scripts are 0755 (rwx r-x r-x)
@@ -109,7 +109,7 @@ RUN chmod 0755 /usr/local/bin/target-cc
 RUN  dpkg --add-architecture amd64 \
     && clean-install bash ca-certificates curl git make pkg-config \
     crossbuild-essential-amd64\
-    libseccomp-dev:amd64 
+    libseccomp-dev:amd64
 # set by makefile to .go-version
 ARG GO_VERSION
 RUN eval "$(gimme "${GO_VERSION}")" \
